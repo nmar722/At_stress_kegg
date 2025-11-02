@@ -209,6 +209,96 @@ window.buildTabsets = function(tocID) {
 };
 
 </script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan, pre.julia, pre.foldable');
+  rCodeBlocks.each(function() {
+    // skip if the block has fold-none class
+    if ($(this).hasClass('fold-none')) return;
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    var showThis = (show || $(this).hasClass('fold-show')) && !$(this).hasClass('fold-hide');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Show') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm code-folding-btn pull-right float-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-bs-toggle', 'collapse') // BS5
+        .attr('data-target', '#' + id)
+        .attr('data-bs-target', '#' + id)   // BS5
+        .attr('aria-expanded', showThis)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // show the div if necessary
+    if (showThis) div.collapse('show');
+
+    // update state of button on show/hide
+    //   * Change text
+    //   * add a class for intermediate states styling
+    div.on('hide.bs.collapse', function () {
+      showCodeText.text('Show');
+      showCodeButton.addClass('btn-collapsing');
+    });
+    div.on('hidden.bs.collapse', function () {
+      showCodeButton.removeClass('btn-collapsing');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+      showCodeButton.addClass('btn-expanding');
+    });
+    div.on('shown.bs.collapse', function () {
+      showCodeButton.removeClass('btn-expanding');
+    });
+
+  });
+
+}
+</script>
+<script>
+window.initializeSourceEmbed = function(filename) {
+  $("#rmd-download-source").click(function() {
+    var src = $("#rmd-source-code").html();
+    var a = document.createElement('a');
+    a.href = "data:text/x-r-markdown;base64," + src;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+};
+</script>
 <style type="text/css">.hljs-literal {
 color: #990073;
 }
@@ -252,6 +342,11 @@ if (window.hljs) {
 
 
 
+<style type="text/css">
+#rmd-source-code {
+display: none;
+}
+</style>
 
 
 
@@ -332,6 +427,9 @@ display: none;
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -348,6 +446,13 @@ display: none;
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">KEGG analysis of Arabidopsis RNAseq
@@ -357,17 +462,38 @@ data</h1>
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#load-required-packages" id="toc-load-required-packages"><span class="toc-section-number">1</span> Load required packages</a></li>
+<li><a href="#set-the-desired-organism" id="toc-set-the-desired-organism"><span class="toc-section-number">2</span> Set the desired organism</a></li>
+</ul>
+</div>
 
 <p>The count data of RNAseq was downloaded from <a href="https://www.ebi.ac.uk/gxa/experiments/E-GEOD-72806/Downloads">Expression
 Atlas web page</a></p>
-<div id="load-required-packages" class="section level2">
-<h2>Load required packages</h2>
-<pre class="r"><code>library(pathview)
+<div id="load-required-packages" class="section level2" number="1">
+<h2><span class="header-section-number">1</span> Load required
+packages</h2>
+<pre class="r"><code>#BiocManager::install(&quot;clusterProfiler&quot;) 
+#BiocManager::install(&quot;pathview&quot;) 
+#BiocManager::install(&quot;enrichplot&quot;)
+
+library(pathview)
 library(clusterProfiler)
 library(enrichplot)
 library(ggplot2)</code></pre>
 </div>
+<div id="set-the-desired-organism" class="section level2" number="2">
+<h2><span class="header-section-number">2</span> Set the desired
+organism</h2>
+<pre class="r"><code>library(org.At.tair.db)
+organism &lt;- &quot;org.At.tair.db&quot;
+if (!requireNamespace(organism, quietly = TRUE)) {
+  BiocManager::install(organism, character.only = TRUE)}
+library(organism, character.only = TRUE)</code></pre>
+</div>
 
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIktFR0cgYW5hbHlzaXMgb2YgQXJhYmlkb3BzaXMgUk5Bc2VxIGRhdGEiDQphdXRob3I6ICJNLiBOYW91bWtpbmEiDQpkYXRlOiAiYHIgU3lzLkRhdGUoKWAiDQpvdXRwdXQ6IA0KICBodG1sX2RvY3VtZW50Og0KICAgIHRvYzogdHJ1ZQ0KICAgIG51bWJlcl9zZWN0aW9uczogdHJ1ZQ0KICAgIGNvZGVfZG93bmxvYWQ6IHRydWUNCi0tLQ0KDQpgYGB7ciBzZXR1cCwgaW5jbHVkZT1GQUxTRX0NCmtuaXRyOjpvcHRzX2NodW5rJHNldChlY2hvID0gVFJVRSkNCmBgYA0KDQpUaGUgY291bnQgZGF0YSBvZiBSTkFzZXEgd2FzIGRvd25sb2FkZWQgZnJvbSBbRXhwcmVzc2lvbiBBdGxhcyB3ZWIgcGFnZV0oaHR0cHM6Ly93d3cuZWJpLmFjLnVrL2d4YS9leHBlcmltZW50cy9FLUdFT0QtNzI4MDYvRG93bmxvYWRzKQ0KDQojIyBMb2FkIHJlcXVpcmVkIHBhY2thZ2VzDQoNCmBgYHtyLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQ0KI0Jpb2NNYW5hZ2VyOjppbnN0YWxsKCJjbHVzdGVyUHJvZmlsZXIiKSANCiNCaW9jTWFuYWdlcjo6aW5zdGFsbCgicGF0aHZpZXciKSANCiNCaW9jTWFuYWdlcjo6aW5zdGFsbCgiZW5yaWNocGxvdCIpDQoNCmxpYnJhcnkocGF0aHZpZXcpDQpsaWJyYXJ5KGNsdXN0ZXJQcm9maWxlcikNCmxpYnJhcnkoZW5yaWNocGxvdCkNCmxpYnJhcnkoZ2dwbG90MikNCmBgYA0KDQojIyBTZXQgdGhlIGRlc2lyZWQgb3JnYW5pc20NCg0KYGBge3IsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9DQpsaWJyYXJ5KG9yZy5BdC50YWlyLmRiKQ0Kb3JnYW5pc20gPC0gIm9yZy5BdC50YWlyLmRiIg0KaWYgKCFyZXF1aXJlTmFtZXNwYWNlKG9yZ2FuaXNtLCBxdWlldGx5ID0gVFJVRSkpIHsNCiAgQmlvY01hbmFnZXI6Omluc3RhbGwob3JnYW5pc20sIGNoYXJhY3Rlci5vbmx5ID0gVFJVRSl9DQpsaWJyYXJ5KG9yZ2FuaXNtLCBjaGFyYWN0ZXIub25seSA9IFRSVUUpDQpgYGANCg0KDQo=</div>
 
 
 
@@ -401,6 +527,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("index.Rmd");
+});
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
