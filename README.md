@@ -6,4 +6,4 @@ Data was downloaded from [Expression Atlas web page](https://www.ebi.ac.uk/gxa/e
 ## KEGG Gene Set Enrichment Analysis
 This worksheet follow a [Tutorial](https://learn.gencore.bio.nyu.edu/rna-seq-analysis/gene-set-enrichment-analysis/).
 
-The Markdown html available at [web page](https://nmar722.github.io/At_stress_kegg/)
+The Markdown html document available at [web page](https://nmar722.github.io/At_stress_kegg/)
