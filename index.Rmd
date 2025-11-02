@@ -38,4 +38,37 @@ if (!requireNamespace(organism, quietly = TRUE)) {
 library(organism, character.only = TRUE)
 ```
 
+## Prepare Input
+
+```{r, message=FALSE, warning=FALSE}
+# Load saved data DE_res_heat, column name X as gene IDs
+df = read.csv("DE_res_heat.csv", header=TRUE)
+# we want the log2 fold change 
+original_gene_list <- df$logFC
+# name the vector
+names(original_gene_list) <- df$X
+# omit any NA values 
+gene_list<-na.omit(original_gene_list)
+# check the gene_list is named numeric vector
+str(gene_list)
+#Filter out non-nuclear genes
+gene_list <- gene_list[grep("^AT[1-5]G", names(gene_list))]
+# sort the list in decreasing order (required for clusterProfiler)
+gene_list = sort(gene_list, decreasing = TRUE)
+```
+## Convert gene IDs for gseKEGG function
+
+```{r, message=FALSE, warning=FALSE}
+# We will lose some genes here because not all IDs will be converted
+ids<-bitr(names(gene_list), fromType = "TAIR", toType = "ENTREZID", OrgDb=organism)
+# remove duplicate IDS (here I use "TAIR", but it should be whatever was selected as keyType)
+dedup_ids = ids[!duplicated(ids[c("TAIR")]),]
+
+# Create a new dataframe df2 which has only the genes which were successfully mapped using the bitr function above
+df2 = df[df$X %in% dedup_ids$TAIR,]
+
+# Create a new column (column Y = ENTREZ) in df2 with the corresponding ENTREZ IDs
+df2$Y = dedup_ids$ENTREZID
+```
+
 

@@ -466,6 +466,9 @@ data</h1>
 <ul>
 <li><a href="#load-required-packages" id="toc-load-required-packages"><span class="toc-section-number">1</span> Load required packages</a></li>
 <li><a href="#set-the-desired-organism" id="toc-set-the-desired-organism"><span class="toc-section-number">2</span> Set the desired organism</a></li>
+<li><a href="#prepare-input" id="toc-prepare-input"><span class="toc-section-number">3</span> Prepare Input</a></li>
+<li><a href="#convert-gene-ids-for-gsekegg-function" id="toc-convert-gene-ids-for-gsekegg-function"><span class="toc-section-number">4</span> Convert gene IDs for gseKEGG
+function</a></li>
 </ul>
 </div>
 
@@ -492,8 +495,41 @@ if (!requireNamespace(organism, quietly = TRUE)) {
   BiocManager::install(organism, character.only = TRUE)}
 library(organism, character.only = TRUE)</code></pre>
 </div>
+<div id="prepare-input" class="section level2" number="3">
+<h2><span class="header-section-number">3</span> Prepare Input</h2>
+<pre class="r"><code># Load saved data DE_res_heat, column name X as gene IDs
+df = read.csv(&quot;DE_res_heat.csv&quot;, header=TRUE)
+# we want the log2 fold change 
+original_gene_list &lt;- df$logFC
+# name the vector
+names(original_gene_list) &lt;- df$X
+# omit any NA values 
+gene_list&lt;-na.omit(original_gene_list)
+# check the gene_list is named numeric vector
+str(gene_list)</code></pre>
+<pre><code>##  Named num [1:18983] 9.09 9.24 7.44 -5.48 -3.4 ...
+##  - attr(*, &quot;names&quot;)= chr [1:18983] &quot;AT3G46230&quot; &quot;AT4G27670&quot; &quot;AT2G29500&quot; &quot;AT2G26560&quot; ...</code></pre>
+<pre class="r"><code>#Filter out non-nuclear genes
+gene_list &lt;- gene_list[grep(&quot;^AT[1-5]G&quot;, names(gene_list))]
+# sort the list in decreasing order (required for clusterProfiler)
+gene_list = sort(gene_list, decreasing = TRUE)</code></pre>
+</div>
+<div id="convert-gene-ids-for-gsekegg-function" class="section level2" number="4">
+<h2><span class="header-section-number">4</span> Convert gene IDs for
+gseKEGG function</h2>
+<pre class="r"><code># We will lose some genes here because not all IDs will be converted
+ids&lt;-bitr(names(gene_list), fromType = &quot;TAIR&quot;, toType = &quot;ENTREZID&quot;, OrgDb=organism)
+# remove duplicate IDS (here I use &quot;TAIR&quot;, but it should be whatever was selected as keyType)
+dedup_ids = ids[!duplicated(ids[c(&quot;TAIR&quot;)]),]
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIktFR0cgYW5hbHlzaXMgb2YgQXJhYmlkb3BzaXMgUk5Bc2VxIGRhdGEiDQphdXRob3I6ICJNLiBOYW91bWtpbmEiDQpkYXRlOiAiYHIgU3lzLkRhdGUoKWAiDQpvdXRwdXQ6IA0KICBodG1sX2RvY3VtZW50Og0KICAgIHRvYzogdHJ1ZQ0KICAgIG51bWJlcl9zZWN0aW9uczogdHJ1ZQ0KICAgIGNvZGVfZG93bmxvYWQ6IHRydWUNCi0tLQ0KDQpgYGB7ciBzZXR1cCwgaW5jbHVkZT1GQUxTRX0NCmtuaXRyOjpvcHRzX2NodW5rJHNldChlY2hvID0gVFJVRSkNCmBgYA0KDQpUaGUgY291bnQgZGF0YSBvZiBSTkFzZXEgd2FzIGRvd25sb2FkZWQgZnJvbSBbRXhwcmVzc2lvbiBBdGxhcyB3ZWIgcGFnZV0oaHR0cHM6Ly93d3cuZWJpLmFjLnVrL2d4YS9leHBlcmltZW50cy9FLUdFT0QtNzI4MDYvRG93bmxvYWRzKQ0KDQojIyBMb2FkIHJlcXVpcmVkIHBhY2thZ2VzDQoNCmBgYHtyLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQ0KI0Jpb2NNYW5hZ2VyOjppbnN0YWxsKCJjbHVzdGVyUHJvZmlsZXIiKSANCiNCaW9jTWFuYWdlcjo6aW5zdGFsbCgicGF0aHZpZXciKSANCiNCaW9jTWFuYWdlcjo6aW5zdGFsbCgiZW5yaWNocGxvdCIpDQoNCmxpYnJhcnkocGF0aHZpZXcpDQpsaWJyYXJ5KGNsdXN0ZXJQcm9maWxlcikNCmxpYnJhcnkoZW5yaWNocGxvdCkNCmxpYnJhcnkoZ2dwbG90MikNCmBgYA0KDQojIyBTZXQgdGhlIGRlc2lyZWQgb3JnYW5pc20NCg0KYGBge3IsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9DQpsaWJyYXJ5KG9yZy5BdC50YWlyLmRiKQ0Kb3JnYW5pc20gPC0gIm9yZy5BdC50YWlyLmRiIg0KaWYgKCFyZXF1aXJlTmFtZXNwYWNlKG9yZ2FuaXNtLCBxdWlldGx5ID0gVFJVRSkpIHsNCiAgQmlvY01hbmFnZXI6Omluc3RhbGwob3JnYW5pc20sIGNoYXJhY3Rlci5vbmx5ID0gVFJVRSl9DQpsaWJyYXJ5KG9yZ2FuaXNtLCBjaGFyYWN0ZXIub25seSA9IFRSVUUpDQpgYGANCg0KDQo=</div>
+# Create a new dataframe df2 which has only the genes which were successfully mapped using the bitr function above
+df2 = df[df$X %in% dedup_ids$TAIR,]
+
+# Create a new column (column Y = ENTREZ) in df2 with the corresponding ENTREZ IDs
+df2$Y = dedup_ids$ENTREZID</code></pre>
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIktFR0cgYW5hbHlzaXMgb2YgQXJhYmlkb3BzaXMgUk5Bc2VxIGRhdGEiDQphdXRob3I6ICJNLiBOYW91bWtpbmEiDQpkYXRlOiAiYHIgU3lzLkRhdGUoKWAiDQpvdXRwdXQ6IA0KICBodG1sX2RvY3VtZW50Og0KICAgIHRvYzogdHJ1ZQ0KICAgIG51bWJlcl9zZWN0aW9uczogdHJ1ZQ0KICAgIGNvZGVfZG93bmxvYWQ6IHRydWUNCi0tLQ0KDQpgYGB7ciBzZXR1cCwgaW5jbHVkZT1GQUxTRX0NCmtuaXRyOjpvcHRzX2NodW5rJHNldChlY2hvID0gVFJVRSkNCmBgYA0KDQpUaGUgY291bnQgZGF0YSBvZiBSTkFzZXEgd2FzIGRvd25sb2FkZWQgZnJvbSBbRXhwcmVzc2lvbiBBdGxhcyB3ZWIgcGFnZV0oaHR0cHM6Ly93d3cuZWJpLmFjLnVrL2d4YS9leHBlcmltZW50cy9FLUdFT0QtNzI4MDYvRG93bmxvYWRzKQ0KDQojIyBMb2FkIHJlcXVpcmVkIHBhY2thZ2VzDQoNCmBgYHtyLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQ0KI0Jpb2NNYW5hZ2VyOjppbnN0YWxsKCJjbHVzdGVyUHJvZmlsZXIiKSANCiNCaW9jTWFuYWdlcjo6aW5zdGFsbCgicGF0aHZpZXciKSANCiNCaW9jTWFuYWdlcjo6aW5zdGFsbCgiZW5yaWNocGxvdCIpDQoNCmxpYnJhcnkocGF0aHZpZXcpDQpsaWJyYXJ5KGNsdXN0ZXJQcm9maWxlcikNCmxpYnJhcnkoZW5yaWNocGxvdCkNCmxpYnJhcnkoZ2dwbG90MikNCmBgYA0KDQojIyBTZXQgdGhlIGRlc2lyZWQgb3JnYW5pc20NCg0KYGBge3IsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9DQpsaWJyYXJ5KG9yZy5BdC50YWlyLmRiKQ0Kb3JnYW5pc20gPC0gIm9yZy5BdC50YWlyLmRiIg0KaWYgKCFyZXF1aXJlTmFtZXNwYWNlKG9yZ2FuaXNtLCBxdWlldGx5ID0gVFJVRSkpIHsNCiAgQmlvY01hbmFnZXI6Omluc3RhbGwob3JnYW5pc20sIGNoYXJhY3Rlci5vbmx5ID0gVFJVRSl9DQpsaWJyYXJ5KG9yZ2FuaXNtLCBjaGFyYWN0ZXIub25seSA9IFRSVUUpDQpgYGANCg0KIyMgUHJlcGFyZSBJbnB1dA0KDQpgYGB7ciwgbWVzc2FnZT1GQUxTRSwgd2FybmluZz1GQUxTRX0NCiMgTG9hZCBzYXZlZCBkYXRhIERFX3Jlc19oZWF0LCBjb2x1bW4gbmFtZSBYIGFzIGdlbmUgSURzDQpkZiA9IHJlYWQuY3N2KCJERV9yZXNfaGVhdC5jc3YiLCBoZWFkZXI9VFJVRSkNCiMgd2Ugd2FudCB0aGUgbG9nMiBmb2xkIGNoYW5nZSANCm9yaWdpbmFsX2dlbmVfbGlzdCA8LSBkZiRsb2dGQw0KIyBuYW1lIHRoZSB2ZWN0b3INCm5hbWVzKG9yaWdpbmFsX2dlbmVfbGlzdCkgPC0gZGYkWA0KIyBvbWl0IGFueSBOQSB2YWx1ZXMgDQpnZW5lX2xpc3Q8LW5hLm9taXQob3JpZ2luYWxfZ2VuZV9saXN0KQ0KIyBjaGVjayB0aGUgZ2VuZV9saXN0IGlzIG5hbWVkIG51bWVyaWMgdmVjdG9yDQpzdHIoZ2VuZV9saXN0KQ0KI0ZpbHRlciBvdXQgbm9uLW51Y2xlYXIgZ2VuZXMNCmdlbmVfbGlzdCA8LSBnZW5lX2xpc3RbZ3JlcCgiXkFUWzEtNV1HIiwgbmFtZXMoZ2VuZV9saXN0KSldDQojIHNvcnQgdGhlIGxpc3QgaW4gZGVjcmVhc2luZyBvcmRlciAocmVxdWlyZWQgZm9yIGNsdXN0ZXJQcm9maWxlcikNCmdlbmVfbGlzdCA9IHNvcnQoZ2VuZV9saXN0LCBkZWNyZWFzaW5nID0gVFJVRSkNCmBgYA0KIyMgQ29udmVydCBnZW5lIElEcyBmb3IgZ3NlS0VHRyBmdW5jdGlvbg0KDQpgYGB7ciwgbWVzc2FnZT1GQUxTRSwgd2FybmluZz1GQUxTRX0NCiMgV2Ugd2lsbCBsb3NlIHNvbWUgZ2VuZXMgaGVyZSBiZWNhdXNlIG5vdCBhbGwgSURzIHdpbGwgYmUgY29udmVydGVkDQppZHM8LWJpdHIobmFtZXMoZ2VuZV9saXN0KSwgZnJvbVR5cGUgPSAiVEFJUiIsIHRvVHlwZSA9ICJFTlRSRVpJRCIsIE9yZ0RiPW9yZ2FuaXNtKQ0KIyByZW1vdmUgZHVwbGljYXRlIElEUyAoaGVyZSBJIHVzZSAiVEFJUiIsIGJ1dCBpdCBzaG91bGQgYmUgd2hhdGV2ZXIgd2FzIHNlbGVjdGVkIGFzIGtleVR5cGUpDQpkZWR1cF9pZHMgPSBpZHNbIWR1cGxpY2F0ZWQoaWRzW2MoIlRBSVIiKV0pLF0NCg0KIyBDcmVhdGUgYSBuZXcgZGF0YWZyYW1lIGRmMiB3aGljaCBoYXMgb25seSB0aGUgZ2VuZXMgd2hpY2ggd2VyZSBzdWNjZXNzZnVsbHkgbWFwcGVkIHVzaW5nIHRoZSBiaXRyIGZ1bmN0aW9uIGFib3ZlDQpkZjIgPSBkZltkZiRYICVpbiUgZGVkdXBfaWRzJFRBSVIsXQ0KDQojIENyZWF0ZSBhIG5ldyBjb2x1bW4gKGNvbHVtbiBZID0gRU5UUkVaKSBpbiBkZjIgd2l0aCB0aGUgY29ycmVzcG9uZGluZyBFTlRSRVogSURzDQpkZjIkWSA9IGRlZHVwX2lkcyRFTlRSRVpJRA0KYGBgDQoNCg0K</div>
 
 
 
