@@ -121,6 +121,15 @@ dotplot(kk2, showCategory = 10, title = "Enriched Pathways" , split=".sign") + f
   scale_y_discrete(labels = function(x) str_wrap(x, width = 400))
 ```
 
+## Encrichment map
+```{r, message=FALSE, warning=FALSE}
+# check number of enrichment terms
+nrow(kk2@result)
+# Compute Term Similarity Explicitly
+kk2 <- pairwise_termsim(kk2)
+# run emapplot 
+emapplot(kk2, showCategory = 20)
+```
 
 
 
