@@ -131,6 +131,11 @@ kk2 <- pairwise_termsim(kk2)
 emapplot(kk2, showCategory = 20)
 ```
 
+## Category Netplot
+```{r, message=FALSE, warning=FALSE}
+# categorySize can be either 'pvalue' or 'geneNum'
+cnetplot(kk2, categorySize="pvalue", foldChange=gene_list)
+```
 
 
 
