@@ -155,3 +155,27 @@ Use the `Gene Set` param for the index in the title, and as the value for `geneS
 gseaplot(kk2, by = "all", title = kk2$Description[1], geneSetID = 1)
 ```
 
+## Pathview
+Following parameters are needed to be enter: `gene.data` is the kegg_gene_list created above; `pathway.id`, which cab be found in the gseKEGG output table; `species` same as organism above in gseKEGG, which we defined as kegg_organism.
+
+```{r, echo=TRUE, out.width="100%", warning=FALSE, message=FALSE}
+# Check pathway IDs first
+kk2@result$ID
+
+pathview(gene.data = kegg_gene_list,
+         pathway.id = "ath00750",
+         species = "ath",
+         kegg.native = FALSE)
+
+knitr::include_graphics("ath00750.pathview.png")
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Save the native KEGG plot (PNG) in your working directory
+ath <- pathview(gene.data=kegg_gene_list, pathway.id="ath00750", species = kegg_organism)
+```
+
+## Session Info
+```{r session-info, echo=TRUE}
+sessionInfo()
+```
