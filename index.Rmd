@@ -146,5 +146,12 @@ ridgeplot(kk2) +
   scale_y_discrete(labels = function(x) str_wrap(x, width = 400))
 ```
 
+## GSEA Plot
+Gene Set Integer corresponds to gene set in the GSE object. 
+The first gene set is 1, second gene set is 2, etc. Default: 1
+Use the `Gene Set` param for the index in the title, and as the value for `geneSetId`.
 
+```{r, fig.width=10, fig.height=6, message=FALSE, warning=FALSE}
+gseaplot(kk2, by = "all", title = kk2$Description[1], geneSetID = 1)
+```
 
