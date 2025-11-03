@@ -88,12 +88,19 @@ kegg_gene_list <- sort(kegg_gene_list, decreasing = TRUE)
 ## Create gseKEGG object
 KEGG Organism Code. For Arabidopsis the code is 'ath'. 
 The full list of organisms codes is [here](https://www.genome.jp/kegg/catalog/org_list.html). 
+
  - I define this as kegg_organism first, because it is used again below when making the pathview plots.
+ 
  - nPerm the higher the number of permutations you set, the more accurate your result will, but the longer the analysis will take.
+ 
  - minGSSize minimum number of genes in set (gene sets with lower than this many genes in your dataset will be ignored).
+ 
  - maxGSSize maximum number of genes in set (gene sets with greater than this many genes in your dataset will be ignored).
+ 
  - pvalueCutoff pvalue Cutoff.
+ 
  - pAdjustMethod one of “holm”, “hochberg”, “hommel”, “bonferroni”, “BH”, “BY”, “fdr”, “none”.
+ 
  - keyType one of ‘kegg’, ‘ncbi-geneid’, ‘ncib-proteinid’ or ‘uniprot’.
 
 ```{r,message=FALSE, warning=FALSE}
