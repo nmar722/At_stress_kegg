@@ -137,6 +137,14 @@ emapplot(kk2, showCategory = 20)
 cnetplot(kk2, categorySize="pvalue", foldChange=gene_list)
 ```
 
+## Ridgeplot with forced one-line pathway labels
+```{r, message=FALSE,warning=FALSE}
+library(stringr)  # for str_wrap
+ridgeplot(kk2) +
+  labs(x = "Enrichment distribution") +
+  theme(axis.text.y = element_text(size = 10)) +
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 400))
+```
 
 
 
